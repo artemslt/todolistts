@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 
 import IconButton from '@mui/material/IconButton';
@@ -11,7 +11,9 @@ import Container from '@mui/material/Container';
 import Header from './components/Header/Header';
 import AddToDo from './components/AddToDo/AddToDo';
 import ContactsList from './components/Contactlist/Contactlist';
+import { PaletteMode } from '@mui/material';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
 const ColorModeContext = React.createContext({ toggleColorMode: () => {} });
 
 function App() {
@@ -19,9 +21,8 @@ function App() {
   const colorMode = React.useContext(ColorModeContext);
 
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <CssBaseline />
-
       <Container maxWidth='md'>
         <Box
           sx={{
@@ -43,12 +44,28 @@ function App() {
         <AddToDo />
         <ContactsList />
       </Container>
-    </ThemeProvider>
+    </>
   );
 }
 
 export default function ToggleColorMode() {
-  const [mode, setMode] = React.useState<'light' | 'dark'>('light');
+  const [mode, setMode] = React.useState<PaletteMode>();
+  useEffect(() => {
+    const theme = localStorage.getItem('theme') || 'light';
+    if (theme === 'dark') {
+      setMode('dark');
+      return;
+    }
+    setMode('light');
+  }, []);
+
+  useEffect(() => {
+    if (!mode) {
+      return;
+    }
+    localStorage.setItem('theme', mode);
+  }, [mode]);
+
   const colorMode = React.useMemo(
     () => ({
       toggleColorMode: () => {
@@ -58,15 +75,11 @@ export default function ToggleColorMode() {
     []
   );
 
-  const theme = React.useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode
-        }
-      }),
-    [mode]
-  );
+  const theme = createTheme({
+    palette: {
+      mode
+    }
+  });
 
   return (
     <ColorModeContext.Provider value={colorMode}>
